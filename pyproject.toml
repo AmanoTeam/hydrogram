@@ -51,7 +51,7 @@ build-backend = "hatchling.build"
 [tool.rye]
 managed = true
 dev-dependencies = [
-    "ruff>=0.4.7",
+    "ruff>=0.5.4",
     "pytest>=7.4.3",
     "pytest-asyncio>=0.23.2",
     "pytest-cov>=4.1.0",
@@ -61,8 +61,8 @@ dev-dependencies = [
 
 [project.optional-dependencies]
 docs = [
-    "Sphinx>=7.3.7",
-    "furo>=2024.5.6",
+    "sphinx>=7.4.7",
+    "furo>=2024.7.18",
     "sphinx-autobuild>=2024.4.16",
     "sphinx-copybutton>=0.5.2",
     "pygments>=2.18.0",
@@ -178,3 +178,20 @@ showcontent = true
 directory = "misc"
 name = "Misc"
 showcontent = true
+
+[tool.rye.scripts]
+clean = { chain = ["clean:docs", "clean:api"] }
+"clean:api" = { cmd = "rm -rf hydrogram/errors/exceptions hydrogram/raw/all.py hydrogram/raw/base hydrogram/raw/functions hydrogram/raw/types" }
+"clean:docs" = { cmd = "rm -rf docs/build docs/source/api/bound-methods docs/source/api/methods docs/source/api/types docs/source/telegram" }
+
+api = { chain = ["api:raw", "api:errors"] }
+"api:raw" = { call = "compiler.api.compiler:start" }
+"api:errors" = { call = "compiler.errors.compiler:start" }
+
+docs = { chain = ["docs:compile", "docs:serve"] }
+"docs:compile" = { cmd = "python compiler/docs/compiler.py" }
+"docs:serve" = { cmd = "sphinx-build -b html docs/source docs/build/html -j auto" }
+live-docs = { cmd = "sphinx-autobuild docs/source docs/build/html -j auto --watch src" }
+
+towncrier = { cmd = "towncrier build --yes" }
+towncrier-draft = { cmd = "towncrier build --draft" }

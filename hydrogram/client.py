@@ -58,6 +58,8 @@ from hydrogram.storage import BaseStorage, SQLiteStorage
 from hydrogram.types import ListenerTypes, TermsOfService, User
 from hydrogram.utils import ainput
 
+from .connection import Connection
+from .connection.transport import TCP, TCPAbridged
 from .dispatcher import Dispatcher
 from .file_id import FileId, FileType, ThumbnailSource
 from .mime_types import mime_types
@@ -65,6 +67,7 @@ from .parser import Parser
 from .session.internals import MsgId
 
 if TYPE_CHECKING:
+    import builtins
     from collections.abc import AsyncGenerator
 
 log = logging.getLogger(__name__)
@@ -190,6 +193,12 @@ class Client(Methods):
             Set the maximum amount of concurrent transmissions (uploads & downloads).
             A value that is too high may result in network related issues.
             Defaults to 1.
+
+        connection_factory (:obj:`~hydrogram.connection.Connection`, *optional*):
+            Pass a custom connection factory to the client.
+
+        protocol_factory (:obj:`~hydrogram.connection.transport.TCP`, *optional*):
+            Pass a custom protocol factory to the client.
     """
 
     APP_VERSION = f"Hydrogram {__version__}"
@@ -242,6 +251,8 @@ class Client(Methods):
         sleep_threshold: int = Session.SLEEP_THRESHOLD,
         hide_password: bool = False,
         max_concurrent_transmissions: int = MAX_CONCURRENT_TRANSMISSIONS,
+        connection_factory: builtins.type[Connection] = Connection,
+        protocol_factory: builtins.type[TCP] = TCPAbridged,
     ):
         super().__init__()
 
@@ -270,6 +281,8 @@ class Client(Methods):
         self.sleep_threshold = sleep_threshold
         self.hide_password = hide_password
         self.max_concurrent_transmissions = max_concurrent_transmissions
+        self.connection_factory = connection_factory
+        self.protocol_factory = protocol_factory
 
         self.executor = ThreadPoolExecutor(self.workers, thread_name_prefix="Handler")
 
@@ -317,7 +330,6 @@ class Client(Methods):
         self.updates_watchdog_event = asyncio.Event()
         self.last_update_time = datetime.now()
 
-        self.loop = asyncio.get_event_loop()
         self.listeners = {listener_type: [] for listener_type in ListenerTypes}
 
     async def __aenter__(self):
@@ -326,6 +338,15 @@ class Client(Methods):
     async def __aexit__(self, *args):
         with contextlib.suppress(ConnectionError):
             await self.stop()
+
+    @functools.cached_property
+    def loop(self):
+        try:
+            return asyncio.get_running_loop()
+        except RuntimeError:
+            _loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(_loop)
+            return _loop
 
     async def updates_watchdog(self):
         while True:

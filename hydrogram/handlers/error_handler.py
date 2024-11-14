@@ -25,6 +25,7 @@ from .handler import Handler
 
 if TYPE_CHECKING:
     import hydrogram
+    from hydrogram.types import Update
 
 
 class ErrorHandler(Handler):
@@ -39,7 +40,7 @@ class ErrorHandler(Handler):
             Pass a function that will be called when a new Error arrives. It takes *(client, error)*
             as positional arguments (look at the section below for a detailed description).
 
-        errors (``Exception`` | Iterable of ``Exception``, *optional*):
+        exceptions (``Exception`` | Iterable of ``Exception``, *optional*):
             Pass one or more exception classes to allow only a subset of errors to be passed
             in your callback function.
 
@@ -47,26 +48,32 @@ class ErrorHandler(Handler):
         client (:obj:`~hydrogram.Client`):
             The Client itself, useful when you want to call other API methods inside the error handler.
 
-        error (``Exception``):
-            The error that was raised.
-
         update (:obj:`~hydrogram.Update`):
             The update that caused the error.
+
+        error (``Exception``):
+            The error that was raised.
     """
 
     def __init__(
-        self, callback: Callable, errors: type[Exception] | Iterable[type[Exception]] | None = None
+        self,
+        callback: Callable,
+        exceptions: type[Exception] | Iterable[type[Exception]] | None = None,
     ):
-        if errors is None:
-            errors = [Exception]
-        elif not isinstance(errors, Iterable):
-            errors = [errors]
-
-        self.errors = errors
+        self.exceptions = (
+            tuple(exceptions)
+            if isinstance(exceptions, Iterable)
+            else (exceptions,)
+            if exceptions
+            else (Exception,)
+        )
         super().__init__(callback)
 
-    async def check(self, client: hydrogram.Client, error: Exception):
-        return any(isinstance(error, e) for e in self.errors)
+    async def check(self, client: hydrogram.Client, update: Update, exception: Exception) -> bool:
+        if isinstance(exception, self.exceptions):
+            await self.callback(client, update, exception)
+            return True
+        return False
 
-    def check_remove(self, error: Exception):
-        return self.errors == error or any(isinstance(error, e) for e in self.errors)
+    def check_remove(self, error: type[Exception] | Iterable[type[Exception]]) -> bool:
+        return isinstance(error, self.exceptions)

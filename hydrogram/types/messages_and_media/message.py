@@ -756,7 +756,7 @@ class Message(Object, Update):
                     except MessageIdsEmpty:
                         pass
 
-            client.message_cache[(parsed_message.chat.id, parsed_message.id)] = parsed_message
+            client.message_cache[parsed_message.chat.id, parsed_message.id] = parsed_message
 
             if message.reply_to and message.reply_to.forum_topic:
                 if message.reply_to.reply_to_top_id:
@@ -990,28 +990,29 @@ class Message(Object, Update):
             )
 
             if message.reply_to:
-                if message.reply_to.forum_topic:
-                    if message.reply_to.reply_to_top_id:
-                        thread_id = message.reply_to.reply_to_top_id
+                if isinstance(message.reply_to, raw.types.MessageReplyHeader):
+                    if message.reply_to.forum_topic:
+                        if message.reply_to.reply_to_top_id:
+                            thread_id = message.reply_to.reply_to_top_id
+                            parsed_message.reply_to_message_id = message.reply_to.reply_to_msg_id
+                        else:
+                            thread_id = message.reply_to.reply_to_msg_id
+                        parsed_message.message_thread_id = thread_id
+                        parsed_message.is_topic_message = True
+                        if topics:
+                            parsed_message.topics = types.ForumTopic._parse(topics[thread_id])
+                        else:
+                            try:
+                                msg = await client.get_messages(parsed_message.chat.id, message.id)
+                                if getattr(msg, "topics"):
+                                    parsed_message.topics = msg.topics
+                            except Exception:
+                                pass
+                    else:
                         parsed_message.reply_to_message_id = message.reply_to.reply_to_msg_id
-                    else:
-                        thread_id = message.reply_to.reply_to_msg_id
-                    parsed_message.message_thread_id = thread_id
-                    parsed_message.is_topic_message = True
-                    if topics:
-                        parsed_message.topics = types.ForumTopic._parse(topics[thread_id])
-                    else:
-                        try:
-                            msg = await client.get_messages(parsed_message.chat.id, message.id)
-                            if getattr(msg, "topics"):
-                                parsed_message.topics = msg.topics
-                        except Exception:
-                            pass
-                else:
-                    parsed_message.reply_to_message_id = message.reply_to.reply_to_msg_id
-                    parsed_message.reply_to_top_message_id = message.reply_to.reply_to_top_id
-                    if isinstance(message.reply_to, raw.types.MessageReplyStoryHeader):
-                        parsed_message.reply_to_message_id = message.reply_to.story_id
+                        parsed_message.reply_to_top_message_id = message.reply_to.reply_to_top_id
+                if isinstance(message.reply_to, raw.types.MessageReplyStoryHeader):
+                    parsed_message.reply_to_message_id = message.reply_to.story_id
 
                 if replies:
                     try:
@@ -1030,7 +1031,7 @@ class Message(Object, Update):
                         pass
 
             if not parsed_message.poll:  # Do not cache poll messages
-                client.message_cache[(parsed_message.chat.id, parsed_message.id)] = parsed_message
+                client.message_cache[parsed_message.chat.id, parsed_message.id] = parsed_message
 
             return parsed_message
         return None
@@ -1648,7 +1649,9 @@ class Message(Object, Update):
         .. code-block:: python
 
             await client.send_cached_media(
-                chat_id=message.chat.id, message_thread_id=message.message_thread_id, file_id=file_id
+                chat_id=message.chat.id,
+                message_thread_id=message.message_thread_id,
+                file_id=file_id,
             )
 
         Example:
@@ -1860,7 +1863,9 @@ class Message(Object, Update):
         .. code-block:: python
 
             await client.send_document(
-                chat_id=message.chat.id, message_thread_id=message.message_thread_id, document=document
+                chat_id=message.chat.id,
+                message_thread_id=message.message_thread_id,
+                document=document,
             )
 
         Example:
@@ -2375,7 +2380,9 @@ class Message(Object, Update):
     async def reply_poll(
         self,
         question: str,
-        options: list[str],
+        options: list[types.InputPollOption],
+        question_parse_mode: enums.ParseMode = None,
+        question_entities: list[types.MessageEntity] | None = None,
         is_anonymous: bool = True,
         type: enums.PollType = enums.PollType.REGULAR,
         allows_multiple_answers: bool | None = None,
@@ -2404,22 +2411,39 @@ class Message(Object, Update):
 
             await client.send_poll(
                 chat_id=message.chat.id,
-                message_thread_id=message.message_thread_id,
                 question="This is a poll",
-                options=["A", "B", "C]
+                options=[
+                    InputPollOption(text="A"),
+                    InputPollOption(text="B"),
+                    InputPollOption(text="C"),
+                ],
             )
 
         Example:
             .. code-block:: python
 
-                await message.reply_poll("This is a poll", ["A", "B", "C"])
+                await message.reply_poll(
+                    question="This is a poll",
+                    options=[
+                        InputPollOption(text="A"),
+                        InputPollOption(text="B"),
+                        InputPollOption(text="C"),
+                    ],
+                )
 
         Parameters:
             question (``str``):
                 Poll question, 1-255 characters.
 
-            options (List of ``str``):
-                List of answer options, 2-10 strings 1-100 characters each.
+            options (List of :obj:`~hydrogram.types.InputPollOption`):
+                List of answer options, 2-10 answer options,  1-100 characters for each option.
+
+            question_parse_mode (:obj:`~hydrogram.enums.ParseMode`, *optional*):
+                By default, texts are parsed using both Markdown and HTML styles.
+                You can combine both syntaxes together.
+
+            question_entities (List of :obj:`~hydrogram.types.MessageEntity`):
+                List of special entities that appear in the poll question, which can be specified instead of *question_parse_mode*.
 
             is_anonymous (``bool``, *optional*):
                 True, if the poll needs to be anonymous.
@@ -2500,6 +2524,8 @@ class Message(Object, Update):
             message_thread_id=self.message_thread_id,
             question=question,
             options=options,
+            question_parse_mode=question_parse_mode,
+            question_entities=question_entities,
             is_anonymous=is_anonymous,
             type=type,
             allows_multiple_answers=allows_multiple_answers,
@@ -2537,7 +2563,9 @@ class Message(Object, Update):
         .. code-block:: python
 
             await client.send_sticker(
-                chat_id=message.chat.id, message_thread_id=message.message_thread_id, sticker=sticker
+                chat_id=message.chat.id,
+                message_thread_id=message.message_thread_id,
+                sticker=sticker,
             )
 
         Example:
@@ -2729,6 +2757,7 @@ class Message(Object, Update):
         supports_streaming: bool = True,
         disable_notification: bool | None = None,
         reply_to_message_id: int | None = None,
+        no_sound: bool | None = False,
         reply_markup: types.InlineKeyboardMarkup
         | types.ReplyKeyboardMarkup
         | types.ReplyKeyboardRemove
@@ -2806,6 +2835,10 @@ class Message(Object, Update):
             reply_to_message_id (``int``, *optional*):
                 If the message is a reply, ID of the original message.
 
+            no_sound (``bool``, *optional*):
+                Pass True if the video you are uploading is a video message with no sound.
+                Does not work for external links.
+
             reply_markup (:obj:`~hydrogram.types.InlineKeyboardMarkup` | :obj:`~hydrogram.types.ReplyKeyboardMarkup` | :obj:`~hydrogram.types.ReplyKeyboardRemove` | :obj:`~hydrogram.types.ForceReply`, *optional*):
                 Additional interface options. An object for an inline keyboard, custom reply keyboard,
                 instructions to remove reply keyboard or to force a reply from the user.
@@ -2862,6 +2895,7 @@ class Message(Object, Update):
             supports_streaming=supports_streaming,
             disable_notification=disable_notification,
             reply_to_message_id=reply_to_message_id,
+            no_sound=no_sound,
             reply_markup=reply_markup,
             progress=progress,
             progress_args=progress_args,
@@ -3600,7 +3634,9 @@ class Message(Object, Update):
 
         .. code-block:: python
 
-            await client.send_message(chat_id=message.chat.id, text=message.reply_markup[i][j].text)
+            await client.send_message(
+                chat_id=message.chat.id, text=message.reply_markup[i][j].text
+            )
 
         Example:
             This method can be used in three different ways:

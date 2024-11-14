@@ -17,6 +17,8 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Hydrogram.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import asyncio
 import bisect
 import contextlib
@@ -25,11 +27,10 @@ import os
 from datetime import datetime, timedelta
 from hashlib import sha1
 from io import BytesIO
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 import hydrogram
 from hydrogram import raw
-from hydrogram.connection import Connection
 from hydrogram.crypto import mtproto
 from hydrogram.errors import (
     AuthKeyDuplicated,
@@ -44,6 +45,9 @@ from hydrogram.raw.all import layer
 from hydrogram.raw.core import FutureSalts, Int, MsgContainer, TLObject
 
 from .internals import MsgFactory, MsgId
+
+if TYPE_CHECKING:
+    from hydrogram.connection import Connection
 
 log = logging.getLogger(__name__)
 
@@ -72,7 +76,7 @@ class Session:
 
     def __init__(
         self,
-        client: "hydrogram.Client",
+        client: hydrogram.Client,
         dc_id: int,
         auth_key: bytes,
         test_mode: bool,
@@ -86,7 +90,7 @@ class Session:
         self.is_media = is_media
         self.is_cdn = is_cdn
 
-        self.connection = None
+        self.connection: Connection | None = None
 
         self.auth_key_id = sha1(auth_key).digest()[-8:]
 
@@ -108,24 +112,23 @@ class Session:
 
         self.is_started = asyncio.Event()
 
-        self.loop = asyncio.get_event_loop()
-
         self.last_reconnect_attempt = None
 
     async def start(self):
         while True:
-            self.connection = Connection(
-                self.dc_id,
-                self.test_mode,
-                self.client.ipv6,
-                self.client.proxy,
-                self.is_media,
+            self.connection = self.client.connection_factory(
+                dc_id=self.dc_id,
+                test_mode=self.test_mode,
+                ipv6=self.client.ipv6,
+                proxy=self.client.proxy,
+                media=self.is_media,
+                protocol_factory=self.client.protocol_factory,
             )
 
             try:
                 await self.connection.connect()
 
-                self.recv_task = self.loop.create_task(self.recv_worker())
+                self.recv_task = self.client.loop.create_task(self.recv_worker())
 
                 await self.send(raw.functions.Ping(ping_id=0), timeout=self.START_TIMEOUT)
 
@@ -147,7 +150,7 @@ class Session:
                         timeout=self.START_TIMEOUT,
                     )
 
-                self.ping_task = self.loop.create_task(self.ping_worker())
+                self.ping_task = self.client.loop.create_task(self.ping_worker())
 
                 log.info("Session initialized: Layer %s", layer)
                 log.info("Device: %s - %s", self.client.device_model, self.client.app_version)
@@ -206,7 +209,7 @@ class Session:
         await self.start()
 
     async def handle_packet(self, packet):
-        data = await self.loop.run_in_executor(
+        data = await self.client.loop.run_in_executor(
             hydrogram.crypto_executor,
             mtproto.unpack,
             BytesIO(packet),
@@ -276,7 +279,7 @@ class Session:
             elif isinstance(msg.body, raw.types.Pong):
                 msg_id = msg.body.msg_id
             elif self.client is not None:
-                self.loop.create_task(self.client.handle_updates(msg.body))
+                self.client.loop.create_task(self.client.handle_updates(msg.body))
 
             if msg_id in self.results:
                 self.results[msg_id].value = getattr(msg.body, "result", msg.body)
@@ -330,11 +333,11 @@ class Session:
                     )
 
                 if self.is_started.is_set():
-                    self.loop.create_task(self.restart())
+                    self.client.loop.create_task(self.restart())
 
                 break
 
-            self.loop.create_task(self.handle_packet(packet))
+            self.client.loop.create_task(self.handle_packet(packet))
 
         log.info("NetworkTask stopped")
 
@@ -349,7 +352,7 @@ class Session:
 
         log.debug("Sent: %s", message)
 
-        payload = await self.loop.run_in_executor(
+        payload = await self.client.loop.run_in_executor(
             hydrogram.crypto_executor,
             mtproto.pack,
             message,

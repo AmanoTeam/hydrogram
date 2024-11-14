@@ -238,6 +238,7 @@ def hydrogram_api():
             get_send_as_chats
             set_send_as_chat
             set_chat_protected_content
+            transfer_chat_ownership
         """,
         "users": """
         Users
@@ -488,6 +489,7 @@ def hydrogram_api():
         "input_message_content": """
         InputMessageContent
             InputMessageContent
+            InputPollOption
             InputTextMessageContent
         """,
         "authorization": """

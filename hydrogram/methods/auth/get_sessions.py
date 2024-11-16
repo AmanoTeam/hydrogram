@@ -19,7 +19,7 @@
 import logging
 
 import hydrogram
-from hydrogram import raw
+from hydrogram import raw, types
 
 log = logging.getLogger(__name__)
 
@@ -27,10 +27,12 @@ log = logging.getLogger(__name__)
 class GetSessions:
     async def get_sessions(
         self: "hydrogram.Client",
-    ) -> str:
+    ) -> list["types.Session"]:
         """Get your info data by other sessions .
 
         Returns:
-            :obj:`account.Authorizations <hydrogram.raw.base.account.Authorizations>`
+            List[:obj:`~hydrogram.types.Session`]: List of active sessions.
         """
-        return (await self.invoke(raw.functions.account.GetAuthorizations()))
+
+        authorizations = await self.invoke(raw.functions.account.GetAuthorizations())
+        return [types.Session._parse(auth) for auth in authorizations.authorizations]

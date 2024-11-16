@@ -18,6 +18,7 @@
 #  along with Hydrogram.  If not, see <http://www.gnu.org/licenses/>.
 
 from .sent_code import SentCode
+from .session import Session
 from .terms_of_service import TermsOfService
 
-__all__ = ["SentCode", "TermsOfService"]
+__all__ = ["SentCode", "Session", "TermsOfService"]

@@ -19,6 +19,7 @@
 
 from .authorization import (
     SentCode,
+    Session,
     TermsOfService,
     sent_code,
     terms_of_service,
@@ -355,6 +356,7 @@ __all__ = [
     "Restriction",
     "SentCode",
     "SentWebAppMessage",
+    "Session",
     "Sticker",
     "StrippedThumbnail",
     "TermsOfService",

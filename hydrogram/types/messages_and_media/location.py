@@ -16,6 +16,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Hydrogram.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import annotations
 
 import hydrogram
 from hydrogram import raw
@@ -31,16 +32,32 @@ class Location(Object):
 
         latitude (``float``):
             Latitude as defined by sender.
+
+        horizontal_accuracy (``int``, *optional*):
+            The estimated horizontal accuracy of the location, in meters, as defined by sender.
     """
 
-    def __init__(self, *, client: "hydrogram.Client" = None, longitude: float, latitude: float):
+    def __init__(
+        self,
+        *,
+        client: hydrogram.Client = None,
+        longitude: float,
+        latitude: float,
+        horizontal_accuracy: int | None,
+    ):
         super().__init__(client)
 
         self.longitude = longitude
         self.latitude = latitude
+        self.horizontal_accuracy = horizontal_accuracy
 
     @staticmethod
-    def _parse(client, geo_point: "raw.types.GeoPoint") -> "Location":
+    def _parse(client, geo_point: raw.types.GeoPoint) -> Location:
         if isinstance(geo_point, raw.types.GeoPoint):
-            return Location(longitude=geo_point.long, latitude=geo_point.lat, client=client)
+            return Location(
+                longitude=geo_point.long,
+                latitude=geo_point.lat,
+                horizontal_accuracy=geo_point.accuracy_radius,
+                client=client,
+            )
         return None

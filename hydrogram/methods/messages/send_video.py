@@ -42,6 +42,7 @@ class SendVideo:
         message_thread_id: int | None = None,
         parse_mode: enums.ParseMode | None = None,
         caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
         has_spoiler: bool | None = None,
         no_sound: bool | None = None,
         ttl_seconds: int | None = None,
@@ -92,6 +93,9 @@ class SendVideo:
 
             caption_entities (List of :obj:`~hydrogram.types.MessageEntity`):
                 List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
+
+            show_caption_above_media (``bool``, *optional*):
+                Pass True if the caption should be shown above the video.
 
             has_spoiler (``bool``, *optional*):
                 Pass True if the video needs to be covered with a spoiler animation.
@@ -261,6 +265,7 @@ class SendVideo:
                             random_id=self.rnd_id(),
                             schedule_date=utils.datetime_to_timestamp(schedule_date),
                             noforwards=protect_content,
+                            invert_media=show_caption_above_media,
                             reply_markup=await reply_markup.write(self) if reply_markup else None,
                             **await utils.parse_text_entities(
                                 self, caption, parse_mode, caption_entities

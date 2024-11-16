@@ -56,6 +56,9 @@ class InlineQueryResultDocument(InlineQueryResult):
         caption_entities (List of :obj:`~hydrogram.types.MessageEntity`):
             List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
+        show_caption_above_media (:obj:`bool`, *optional*):
+            Wether the caption should be shown above the document.
+
         description (``str``, *optional*):
             Short description of the result.
 
@@ -84,6 +87,7 @@ class InlineQueryResultDocument(InlineQueryResult):
         caption: str = "",
         parse_mode: enums.ParseMode | None = None,
         caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
         description: str = "",
         reply_markup: types.InlineKeyboardMarkup = None,
         input_message_content: types.InputMessageContent = None,
@@ -99,6 +103,7 @@ class InlineQueryResultDocument(InlineQueryResult):
         self.caption = caption
         self.parse_mode = parse_mode
         self.caption_entities = caption_entities
+        self.show_caption_above_media = show_caption_above_media
         self.description = description
         self.thumb_url = thumb_url
         self.thumb_width = thumb_width
@@ -144,6 +149,7 @@ class InlineQueryResultDocument(InlineQueryResult):
                     else None,
                     message=message,
                     entities=entities,
+                    invert_media=self.show_caption_above_media,
                 )
             ),
         )

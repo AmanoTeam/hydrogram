@@ -36,6 +36,7 @@ class SendLocation:
         longitude: float,
         *,
         message_thread_id: int | None = None,
+        horizontal_accuracy: int | None = None,
         disable_notification: bool | None = None,
         reply_to_message_id: int | None = None,
         schedule_date: datetime | None = None,
@@ -64,6 +65,9 @@ class SendLocation:
             message_thread_id (``int``, *optional*):
                 Unique identifier for the target message thread (topic) of the forum.
                 for forum supergroups only.
+
+            horizontal_accuracy (``int``, *optional*):
+                The estimated horizontal accuracy of the location, in meters.
 
             disable_notification (``bool``, *optional*):
                 Sends the message silently.
@@ -97,7 +101,9 @@ class SendLocation:
             raw.functions.messages.SendMedia(
                 peer=await self.resolve_peer(chat_id),
                 media=raw.types.InputMediaGeoPoint(
-                    geo_point=raw.types.InputGeoPoint(lat=latitude, long=longitude)
+                    geo_point=raw.types.InputGeoPoint(
+                        lat=latitude, long=longitude, accuracy_radius=horizontal_accuracy
+                    )
                 ),
                 message="",
                 silent=disable_notification or None,

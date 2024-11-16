@@ -57,6 +57,9 @@ class InputMediaVideo(InputMedia):
         caption_entities (List of :obj:`~hydrogram.types.MessageEntity`):
             List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
+        show_caption_above_media (``bool``, *optional*):
+            Wether the caption should be shown above the video.
+
         width (``int``, *optional*):
             Video width.
 
@@ -84,6 +87,7 @@ class InputMediaVideo(InputMedia):
         caption: str = "",
         parse_mode: enums.ParseMode | None = None,
         caption_entities: list[MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
         width: int = 0,
         height: int = 0,
         duration: int = 0,
@@ -91,7 +95,7 @@ class InputMediaVideo(InputMedia):
         has_spoiler: bool | None = None,
         no_sound: bool | None = None,
     ):
-        super().__init__(media, caption, parse_mode, caption_entities)
+        super().__init__(media, caption, parse_mode, caption_entities, show_caption_above_media)
 
         self.thumb = thumb
         self.width = width

@@ -59,6 +59,9 @@ class InlineQueryResultAudio(InlineQueryResult):
         caption_entities (List of :obj:`~hydrogram.types.MessageEntity`):
             List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
+        show_caption_above_media (:obj:`bool`, *optional*):
+            Wether the caption should be shown above the audio.
+
         reply_markup (:obj:`~hydrogram.types.InlineKeyboardMarkup`, *optional*):
             Inline keyboard attached to the message.
 
@@ -76,6 +79,7 @@ class InlineQueryResultAudio(InlineQueryResult):
         caption: str = "",
         parse_mode: enums.ParseMode | None = None,
         caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
         reply_markup: types.InlineKeyboardMarkup = None,
         input_message_content: types.InputMessageContent = None,
     ):
@@ -88,6 +92,7 @@ class InlineQueryResultAudio(InlineQueryResult):
         self.caption = caption
         self.parse_mode = parse_mode
         self.caption_entities = caption_entities
+        self.show_caption_above_media = show_caption_above_media
 
     async def write(self, client: hydrogram.Client):
         audio = raw.types.InputWebDocument(
@@ -123,6 +128,7 @@ class InlineQueryResultAudio(InlineQueryResult):
                     else None,
                     message=message,
                     entities=entities,
+                    invert_media=self.show_caption_above_media,
                 )
             ),
         )

@@ -135,7 +135,7 @@ def get_type_hint(type: str) -> str:
     ns, name = type.split(".") if "." in type else ("", type)
     type = '"raw.base.' + ".".join([ns, name]).strip(".") + '"'
 
-    return f'{type}{" = None" if is_flag else ""}'
+    return f"{type}{' = None' if is_flag else ''}"
 
 
 def sort_args(args: list[tuple[str, str]]):
@@ -376,7 +376,7 @@ def start(format: bool = False):
             arg_docs = arg_docs["params"].get(arg_name, "N/A") if arg_docs else "N/A"
 
             docstring_args.append(
-                f'{arg_name} ({get_docstring_arg_type(arg_type)}{", *optional*" if is_optional else ""}):\n            {arg_docs}\n'
+                f"{arg_name} ({get_docstring_arg_type(arg_type)}{', *optional*' if is_optional else ''}):\n            {arg_docs}\n"
             )
 
         if c.section == "types":
@@ -458,10 +458,10 @@ def start(format: bool = False):
 
                     write_types += "\n        "
                     write_types += f"if self.{arg_name} is not None:\n            "
-                    write_types += f'b.write(Vector(self.{arg_name}{f", {sub_type.title()}" if sub_type in CORE_TYPES else ""}))\n        '
+                    write_types += f"b.write(Vector(self.{arg_name}{f', {sub_type.title()}' if sub_type in CORE_TYPES else ''}))\n        "
 
                     read_types += "\n        "
-                    read_types += f'{arg_name} = TLObject.read(b{f", {sub_type.title()}" if sub_type in CORE_TYPES else ""}) if flags{number} & (1 << {index}) else []\n        '
+                    read_types += f"{arg_name} = TLObject.read(b{f', {sub_type.title()}' if sub_type in CORE_TYPES else ''}) if flags{number} & (1 << {index}) else []\n        "
                 else:
                     write_types += "\n        "
                     write_types += f"if self.{arg_name} is not None:\n            "
@@ -479,10 +479,10 @@ def start(format: bool = False):
                 elif "vector" in arg_type.lower():
                     sub_type = arg_type.split("<")[1][:-1]
 
-                    write_types += f'b.write(Vector(self.{arg_name}{f", {sub_type.title()}" if sub_type in CORE_TYPES else ""}))\n        '
+                    write_types += f"b.write(Vector(self.{arg_name}{f', {sub_type.title()}' if sub_type in CORE_TYPES else ''}))\n        "
 
                     read_types += "\n        "
-                    read_types += f'{arg_name} = TLObject.read(b{f", {sub_type.title()}" if sub_type in CORE_TYPES else ""})\n        '
+                    read_types += f"{arg_name} = TLObject.read(b{f', {sub_type.title()}' if sub_type in CORE_TYPES else ''})\n        "
                 else:
                     write_types += f"b.write(self.{arg_name}.write())\n        "
 

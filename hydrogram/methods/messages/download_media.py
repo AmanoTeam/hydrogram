@@ -181,7 +181,7 @@ class DownloadMedia:
             else:
                 extension = ".unknown"
 
-            file_name = f'{FileType(file_id_obj.file_type).name.lower()}_{(date or datetime.now()).strftime("%Y-%m-%d_%H-%M-%S")}_{self.rnd_id()}{extension}'
+            file_name = f"{FileType(file_id_obj.file_type).name.lower()}_{(date or datetime.now()).strftime('%Y-%m-%d_%H-%M-%S')}_{self.rnd_id()}{extension}"
 
         downloader = self.handle_download((
             file_id_obj,

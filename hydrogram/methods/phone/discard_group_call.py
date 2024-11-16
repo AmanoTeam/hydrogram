@@ -19,14 +19,14 @@
 from __future__ import annotations
 
 import hydrogram
-from hydrogram import types, raw
+from hydrogram import raw, types
 
 
 class DiscardGroupCall:
     async def discard_group_call(
-        self: "hydrogram.Client",
+        self: hydrogram.Client,
         chat_id: int | str,
-    ) -> "types.Message":
+    ) -> types.Message:
         """Terminate a group/channel call or livestream
 
         .. include:: /_includes/usable-by/users.rst
@@ -76,3 +76,4 @@ class DiscardGroupCall:
                     {i.id: i for i in r.chats},
                     is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
                 )
+        return None

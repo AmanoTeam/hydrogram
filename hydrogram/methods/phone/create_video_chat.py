@@ -18,20 +18,23 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from typing import TYPE_CHECKING
 
 import hydrogram
-from hydrogram import types, raw, utils
+from hydrogram import raw, types, utils
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class CreateVideoChat:
     async def create_video_chat(
-        self: "hydrogram.Client",
+        self: hydrogram.Client,
         chat_id: int | str,
-        title: str = None,
+        title: str | None = None,
         start_date: datetime = utils.zero_datetime(),
-        is_rtmp_stream: bool = None,
-    ) -> "types.Message":
+        is_rtmp_stream: bool | None = None,
+    ) -> types.Message:
         """Creates a video chat (a group call bound to a chat).
 
         Available only for basic groups, supergroups and channels; requires can_manage_video_chats administrator right.
@@ -91,3 +94,4 @@ class CreateVideoChat:
                     {i.id: i for i in r.chats},
                     is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
                 )
+        return None

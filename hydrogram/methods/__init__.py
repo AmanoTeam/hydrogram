@@ -26,10 +26,10 @@ from .decorators import Decorators
 from .invite_links import InviteLinks
 from .messages import Messages
 from .password import Password
+from .phone import Phone
 from .pyromod import Pyromod
 from .users import Users
 from .utilities import Utilities
-from .phone import Phone
 
 
 class Methods(

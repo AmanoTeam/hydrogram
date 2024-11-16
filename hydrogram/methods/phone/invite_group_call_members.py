@@ -19,15 +19,15 @@
 from __future__ import annotations
 
 import hydrogram
-from hydrogram import types, raw
+from hydrogram import raw, types
 
 
 class InviteGroupCallMembers:
     async def invite_group_call_members(
-        self: "hydrogram.Client",
+        self: hydrogram.Client,
         chat_id: int | str,
         user_ids: int | str | list[int | str],
-    ) -> "types.Message":
+    ) -> types.Message:
         """Invites users to an active group call. Sends a service message of type :obj:`~pyrogram.enums.MessageServiceType.VIDEO_CHAT_PARTICIPANTS_INVITED` for video chats.
 
         .. include:: /_includes/usable-by/users.rst
@@ -88,3 +88,4 @@ class InviteGroupCallMembers:
                     {i.id: i for i in r.chats},
                     is_scheduled=isinstance(i, raw.types.UpdateNewScheduledMessage),
                 )
+        return None

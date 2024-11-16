@@ -22,6 +22,7 @@ from .check_password import CheckPassword
 from .connect import Connect
 from .disconnect import Disconnect
 from .get_password_hint import GetPasswordHint
+from .get_sessions import GetSessions
 from .initialize import Initialize
 from .log_out import LogOut
 from .recover_password import RecoverPassword
@@ -32,7 +33,6 @@ from .sign_in import SignIn
 from .sign_in_bot import SignInBot
 from .sign_up import SignUp
 from .terminate import Terminate
-from .get_sessions import GetSessions
 
 
 class Auth(

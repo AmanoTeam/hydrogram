@@ -59,7 +59,7 @@ class TLObject:
 
     def __repr__(self) -> str:
         return (
-            f'hydrogram.raw.{self.QUALNAME}({", ".join(f"{attr}={getattr(self, attr)!r}" for attr in self.__slots__ if getattr(self, attr) is not None)})'
+            f"hydrogram.raw.{self.QUALNAME}({', '.join(f'{attr}={getattr(self, attr)!r}' for attr in self.__slots__ if getattr(self, attr) is not None)})"
             if hasattr(self, "QUALNAME")
             else repr(self)
         )

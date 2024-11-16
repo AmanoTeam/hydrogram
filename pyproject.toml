@@ -134,6 +134,7 @@ ignore = [
     "PLW1514",
     "PLW2901",
     "PLW0603",
+    "FURB189", # This rule is unsafe and not relevant for us.
 ]
 preview = true
 

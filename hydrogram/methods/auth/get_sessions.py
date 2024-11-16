@@ -1,5 +1,4 @@
 #  Hydrogram - Telegram MTProto API Client Library for Python
-#  Copyright (C) 2017-2023 Dan <https://github.com/delivrance>
 #  Copyright (C) 2023-present Hydrogram <https://hydrogram.org>
 #
 #  This file is part of Hydrogram.
@@ -17,8 +16,23 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with Hydrogram.  If not, see <http://www.gnu.org/licenses/>.
 
-from .sent_code import SentCode
-from .session import Session
-from .terms_of_service import TermsOfService
+import logging
 
-__all__ = ["SentCode", "Session", "TermsOfService"]
+import hydrogram
+from hydrogram import raw, types
+
+log = logging.getLogger(__name__)
+
+
+class GetSessions:
+    async def get_sessions(
+        self: "hydrogram.Client",
+    ) -> list["types.Session"]:
+        """Get your info data by other sessions .
+
+        Returns:
+            List[:obj:`~hydrogram.types.Session`]: List of active sessions.
+        """
+
+        authorizations = await self.invoke(raw.functions.account.GetAuthorizations())
+        return [types.Session._parse(auth) for auth in authorizations.authorizations]

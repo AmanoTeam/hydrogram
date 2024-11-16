@@ -170,6 +170,9 @@ class Message(Object, Update):
             For messages with a caption, special entities like usernames, URLs, bot commands, etc. that appear
             in the caption.
 
+        show_caption_above_media (``bool``, *optional*):
+            Message's caption should be shown above the media.
+
         audio (:obj:`~hydrogram.types.Audio`, *optional*):
             Message is an audio file, information about the file.
 
@@ -378,6 +381,7 @@ class Message(Object, Update):
         text: Str = None,
         entities: list[types.MessageEntity] | None = None,
         caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
         audio: types.Audio = None,
         document: types.Document = None,
         photo: types.Photo = None,
@@ -462,6 +466,7 @@ class Message(Object, Update):
         self.text = text
         self.entities = entities
         self.caption_entities = caption_entities
+        self.show_caption_above_media = show_caption_above_media
         self.audio = audio
         self.document = document
         self.photo = photo
@@ -3380,6 +3385,7 @@ class Message(Object, Update):
         message_thread_id: int | None = None,
         parse_mode: enums.ParseMode | None = None,
         caption_entities: list[types.MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
         disable_notification: bool | None = None,
         reply_to_message_id: int | None = None,
         schedule_date: datetime | None = None,
@@ -3425,6 +3431,9 @@ class Message(Object, Update):
 
             caption_entities (List of :obj:`~hydrogram.types.MessageEntity`):
                 List of special entities that appear in the new caption, which can be specified instead of *parse_mode*.
+
+            show_caption_above_media (``bool``, *optional*):
+                Pass True if the caption should be shown above the media.
 
             disable_notification (``bool``, *optional*):
                 Sends the message silently.
@@ -3574,6 +3583,7 @@ class Message(Object, Update):
                 caption=caption,
                 parse_mode=parse_mode,
                 caption_entities=caption_entities,
+                show_caption_above_media=show_caption_above_media,
                 message_thread_id=message_thread_id,
             )
         raise ValueError("Can't copy this message")

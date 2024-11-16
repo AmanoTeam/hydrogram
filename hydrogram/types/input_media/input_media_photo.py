@@ -51,6 +51,9 @@ class InputMediaPhoto(InputMedia):
         caption_entities (List of :obj:`~hydrogram.types.MessageEntity`):
             List of special entities that appear in the caption, which can be specified instead of *parse_mode*.
 
+        show_caption_above_media (``bool``, *optional*):
+            Wether the caption should be shown above the photo.
+
         has_spoiler (``bool``, *optional*):
             Pass True if the photo needs to be covered with a spoiler animation.
     """
@@ -61,8 +64,9 @@ class InputMediaPhoto(InputMedia):
         caption: str = "",
         parse_mode: enums.ParseMode | None = None,
         caption_entities: list[MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
         has_spoiler: bool | None = None,
     ):
-        super().__init__(media, caption, parse_mode, caption_entities)
+        super().__init__(media, caption, parse_mode, caption_entities, show_caption_above_media)
 
         self.has_spoiler = has_spoiler

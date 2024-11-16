@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING, BinaryIO
 from hydrogram.types.object import Object
 
 if TYPE_CHECKING:
+    from hydrogram import enums
     from hydrogram.types.messages_and_media import MessageEntity
 
 
@@ -43,8 +44,9 @@ class InputMedia(Object):
         self,
         media: str | BinaryIO,
         caption: str = "",
-        parse_mode: str | None = None,
+        parse_mode: enums.ParseMode | None = None,
         caption_entities: list[MessageEntity] | None = None,
+        show_caption_above_media: bool | None = None,
     ):
         super().__init__()
 
@@ -52,3 +54,4 @@ class InputMedia(Object):
         self.caption = caption
         self.parse_mode = parse_mode
         self.caption_entities = caption_entities
+        self.show_caption_above_media = show_caption_above_media
